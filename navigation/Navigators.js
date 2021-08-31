@@ -30,7 +30,7 @@ export const AppTabNavigator = () => {
           return <Ionicons name={iconName} color={color} size={size} />;
         },
         tabBarActiveTintColor: Colors.primary,
-        headerShown: false,
+        headerShown: false, // retirer le header de la tab
       })}
     >
       <TabNavigator.Screen
