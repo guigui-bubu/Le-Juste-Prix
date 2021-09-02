@@ -10,13 +10,27 @@ import {
   TextInput,
   Alert,
   ScrollView,
+  KeyboardAvoidingView, // gére virtuellment la position du clavier (ios)
+  Platform,
+  TouchableWithoutFeedback, // fermr le clavier au clic dans le vide
 } from "react-native";
 import Colors from "../constants/Colors";
 import { useSelector, useDispatch } from "react-redux";
 import * as gameActions from "../store/actions/games";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
+// Etape 1 React hokk form
+import { useForm, Controller } from "react-hook-form";
+
 function Home(props) {
+  // Etape 2 React hook form
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm();
+
   // State
   const [steps, setSteps] = useState(1);
   const [proposition, setProposition] = useState();
@@ -34,12 +48,12 @@ function Home(props) {
   const onStartPressedHandler = () => {
     dispatch(gameActions.startGame());
   };
-  const onPropositionPressedHandler = () => {
-    if (isNaN(proposition)) {
+  const onPropositionPressedHandler = (toto) => {
+    if (isNaN(toto.proposition)) {
       // isNaN renvoie true, pour verifier si c bien un nombre
       Alert.alert("Attention", "La triche n'est pas autorisée.");
     } else {
-      if (proposition == solution) {
+      if (toto.proposition == solution) {
         // partie gagnée
         Alert.alert(
           "Juste Prix trouvé",
@@ -53,11 +67,11 @@ function Home(props) {
         setIntruction();
         // Initialiser les étapes à 1
         setSteps(1);
-      } else if (proposition < solution) {
+      } else if (toto.proposition < solution) {
         // C'est plus
         setIntruction("C'est plus !");
         setSteps((prevSteps) => prevSteps + 1); // pour ajouter +1 au nombre de tour
-      } else if (proposition > solution) {
+      } else if (toto.proposition > solution) {
         // C'est moins
         setIntruction("C'est moins !");
         setSteps((prevSteps) => prevSteps + 1); // pour ajouter +1 au nombre de tour
@@ -92,17 +106,31 @@ function Home(props) {
                   </Text>
                 </View>
                 <View style={styles.proposition}>
-                  <TextInput
+                  {/*<TextInput
                     style={styles.input}
                     keyboardType="numeric"
                     value={proposition}
                     onChangeText={setProposition}
                     onFocus={() => setProposition()}
+                  />*/}
+                  <Controller
+                    name="proposition"
+                    control={control}
+                    rules={{ min: 0, required: true }} // régle pour les conditions du formulaire
+                    render={({ field: { value, onChange } }) => (
+                      <TextInput
+                        style={styles.input}
+                        keyboardType="numeric"
+                        value={value}
+                        onChangeText={(value) => onChange(value)}
+                      />
+                    )}
+                    onFocus={() => reset()}
                   />
                   <TouchableOpacity
                     style={styles.send}
                     activeOpacity={0.8}
-                    onPress={onPropositionPressedHandler}
+                    onPress={handleSubmit(onPropositionPressedHandler)}
                   >
                     <Ionicons
                       name="arrow-forward"

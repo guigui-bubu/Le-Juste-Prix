@@ -9,6 +9,9 @@ import {
   TouchableOpacity,
   Alert,
   Keyboard,
+  KeyboardAvoidingView, // gére virtuellment la position du clavier (ios)
+  Platform,
+  TouchableWithoutFeedback, // fermr le clavier au clic dans le vide
 } from "react-native";
 import Colors from "../constants/Colors";
 import { useSelector, useDispatch } from "react-redux";
@@ -57,6 +60,10 @@ function Parametres(props) {
     }
   };
 
+  const onError = (data) => {
+    console.log(data);
+  };
+
   let errorStyle;
   if (errors.minimumInput) {
     errorStyle = {
@@ -66,13 +73,19 @@ function Parametres(props) {
   }
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <Text style={styles.title}>Paramètres</Text>
-        <View style={styles.form}>
-          <Text style={styles.label}>Prix minimum</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      {/*  pour fermer le clavier dans le vide*/}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={styles.container}>
+          <SafeAreaView style={styles.safeArea}>
+            <Text style={styles.title}>Paramètres</Text>
+            <View style={styles.form}>
+              <Text style={styles.label}>Prix minimum</Text>
 
-          {/*<TextInput
+              {/*<TextInput
             value={minimumInput.toString()}
             onChangeText={setMinimumInput}
             style={styles.input}
@@ -80,65 +93,71 @@ function Parametres(props) {
             //keyboardType="numeric" // type de clavier demandé
           />*/}
 
-          {/* ETAPE 4 REACT HOOK FORM */}
+              {/* ETAPE 4 REACT HOOK FORM */}
 
-          <Controller
-            name="minimumInput"
-            control={control}
-            defaultValue={minimum.toString()} // valeur par défault
-            rules={{ min: 0, required: true }} // régle pour les conditions du formulaire
-            render={({ field: { value, onChange } }) => (
-              <TextInput
-                style={{ ...styles.input, ...errorStyle }}
-                placeholder="0"
-                value={value}
-                onChangeText={(value) => onChange(value)}
+              <Controller
+                name="minimumInput"
+                control={control}
+                defaultValue={minimum.toString()} // valeur par défault
+                rules={{ min: 0, required: true }} // régle pour les conditions du formulaire
+                render={({ field: { value, onChange } }) => (
+                  <TextInput
+                    style={{ ...styles.input, ...errorStyle }}
+                    placeholder="0"
+                    keyboardType="numeric"
+                    value={value}
+                    onChangeText={(value) => onChange(value)}
+                  />
+                )}
               />
-            )}
-          />
-          {errors.minimumInput && (
-            <Text style={styles.error}>
-              Veuillez rentrer une valeur correcte.
-            </Text>
-          )}
+              {errors.minimumInput && (
+                <Text style={styles.error}>
+                  Veuillez rentrer une valeur correcte.
+                </Text>
+              )}
 
-          <Text style={{ ...styles.label, marginTop: 25 }}>Prix maximum</Text>
-          {/*<TextInput
+              <Text style={{ ...styles.label, marginTop: 25 }}>
+                Prix maximum
+              </Text>
+              {/*<TextInput
             value={maximumInput.toString()}
             onChangeText={setMaximumInput}
             style={styles.input}
             placeholder="1000"
             //keyboardType="numeric" // type de clavier demandé
           />*/}
-          <Controller
-            name="maximumInput"
-            control={control}
-            defaultValue={maximum.toString()} // valeur par défault
-            rules={{ min: 0, required: true }} // régle pour les conditions du formulaire
-            render={(props) => (
-              <TextInput
-                style={styles.input}
-                placeholder="1000"
-                value={props.value}
-                onChangeText={(value) => props.field.onChange(value)}
+              <Controller
+                name="maximumInput"
+                control={control}
+                defaultValue={maximum.toString()} // valeur par défault
+                rules={{ min: 0, required: true }} // régle pour les conditions du formulaire
+                render={(props) => (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="1000"
+                    keyboardType="numeric"
+                    value={props.value}
+                    onChangeText={(value) => props.field.onChange(value)}
+                  />
+                )}
               />
-            )}
-          />
-          {errors.maximumInput && (
-            <Text style={styles.error}>
-              Veuillez rentrer une valeur correcte.
-            </Text>
-          )}
+              {errors.maximumInput && (
+                <Text style={styles.error}>
+                  Veuillez rentrer une valeur correcte.
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity
+              style={styles.submit}
+              activeOpacity={0.8}
+              onPress={handleSubmit(onSubmitPressedHandler, onError)}
+            >
+              <Text style={styles.submitText}>Sauvgarder</Text>
+            </TouchableOpacity>
+          </SafeAreaView>
         </View>
-        <TouchableOpacity
-          style={styles.submit}
-          activeOpacity={0.8}
-          onPress={handleSubmit(onSubmitPressedHandler)}
-        >
-          <Text style={styles.submitText}>Sauvgarder</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    </View>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -182,6 +201,12 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: "bold",
     marginTop: 5,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: Colors.primary,
+    marginTop: Platform.OS === "android" ? 50 : 15,
   },
 });
 
